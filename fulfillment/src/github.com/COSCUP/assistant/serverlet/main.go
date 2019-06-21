@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/COSCUP/assistant/program-fetcher"
 	"github.com/PichuChen/daemon"
 	"net"
 	"net/http"
@@ -66,6 +67,14 @@ func (service *Service) Manage() (string, error) {
 
 	// Set up listener for defined host and port
 	// listener, err := net.Listen("tcp", port)
+
+	go func() {
+		err := fetcher.RefreshCache()
+		if err != nil {
+			errlog.Println(err)
+			// return "Possibly was a problem with the port binding", err
+		}
+	}()
 
 	go func() {
 		http.HandleFunc("/", handler)
