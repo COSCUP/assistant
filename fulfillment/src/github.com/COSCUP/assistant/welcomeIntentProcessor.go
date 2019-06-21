@@ -8,18 +8,33 @@ func (WelcomeIntentProcessor) Name() string {
 	return "Default Welcome Intent"
 }
 
-func (WelcomeIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
+func (p WelcomeIntentProcessor) displayMessage() string {
+	return "您好，我是開源人年會小幫手，我可以告訴您關於開源人年會 COSCUP 的資訓，您可以從「你會做什麼」開始："
+}
+
+func (p WelcomeIntentProcessor) speechMessage() string {
+	return "您好，我是開源人年會小幫手，我可以告訴您關於開源人年會 摳史髂頗 的資訓，您可以從「你會做什麼」開始："
+}
+
+func (p WelcomeIntentProcessor) getSuggsetion() []map[string]interface{} {
+	return []map[string]interface{}{
+		getSuggestionPayload("你會做什麼"),
+		// getSuggestionPayload("321"),
+	}
+}
+
+func (p WelcomeIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
 	return map[string]interface{}{
 		"expectUserResponse": true,
 
 		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
-				getSimpleResponsePayload("123", "321"),
-				getBasicCardResponsePayload("title", "subtitle", "formattedText",
-					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
+				getSimpleResponsePayload(p.speechMessage(), p.displayMessage()),
+				// getBasicCardResponsePayload("title", "subtitle", "formattedText",
+				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
 
-				getSimpleResponsePayload("123", "321"),
+				// getSimpleResponsePayload("123", "321"),
 				// getTableCardResponsePayload("title", "subtitle",
 				// 	[]Row{
 				// 		getRowPayload([]Cell{getCellPayload("1"), getCellPayload("2"), getCellPayload("3")}, true),
@@ -33,11 +48,8 @@ func (WelcomeIntentProcessor) Payload(input *DialogflowRequest) map[string]inter
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED",
 				// ),
 			},
-			"suggestions": []map[string]interface{}{
-				getSuggestionPayload("123"),
-				getSuggestionPayload("321"),
-			},
-			"linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
+			"suggestions": p.getSuggsetion(),
+			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},
 	}
 }

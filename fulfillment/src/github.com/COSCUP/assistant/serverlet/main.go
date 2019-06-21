@@ -86,6 +86,8 @@ func (service *Service) Manage() (string, error) {
 
 	}()
 
+	stdlog.Println("Server is listrn on", port)
+
 	// set up channel on which to send accepted connections
 	// listen := make(chan net.Conn, 100)
 	// go acceptConnection(listener, listen)
