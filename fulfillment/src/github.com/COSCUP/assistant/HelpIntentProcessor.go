@@ -1,5 +1,11 @@
 package assistant
 
+import (
+	"github.com/COSCUP/assistant/program-fetcher"
+	log "github.com/Sirupsen/logrus"
+	"math/rand"
+)
+
 type HelpIntentProcessor struct {
 }
 
@@ -9,20 +15,40 @@ func (HelpIntentProcessor) Name() string {
 }
 
 func (p HelpIntentProcessor) displayMessage() string {
-	return "現在是 Day 1 我可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
+	if IsInActivity(getUserTime("")) {
+
+		return "現在是 Day 1 我可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
+	} else {
+		return "OAO"
+	}
+
 }
 
 func (p HelpIntentProcessor) speechMessage() string {
-	return `<speak>現在是 <sub alias="哋萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
+	return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
+}
+
+func (p HelpIntentProcessor) getSuggsetionItemFromRoomName(roomName string) map[string]interface{} {
+	return getSuggestionPayload(roomName + "的議程什麼時候開始")
 }
 
 func (p HelpIntentProcessor) getSuggsetion() []map[string]interface{} {
-	return []map[string]interface{}{
+
+	list, _ := fetcher.GetPrograms()
+	log.Println("kust", list.Rooms)
+
+	perm := rand.Perm(len(list.Rooms))
+
+	ret := []map[string]interface{}{
 		getSuggestionPayload("好了謝謝"),
-		getSuggestionPayload("IB101的議程什麼時候開始"),
-		getSuggestionPayload("IB201的議程什麼時候開始"),
 		// getSuggestionPayload("321"),
 	}
+	var selectNumber = 5
+	for _, selectedIndex := range perm[:selectNumber] {
+		ret = append(ret, p.getSuggsetionItemFromRoomName(list.Rooms[selectedIndex].Zh.Name))
+	}
+
+	return ret
 }
 
 func (p HelpIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {

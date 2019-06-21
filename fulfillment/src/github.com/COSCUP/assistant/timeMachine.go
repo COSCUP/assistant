@@ -1,0 +1,36 @@
+package assistant
+
+import (
+	"time"
+)
+
+var startDate = "2019-08-16 00:00:00+0800"
+var TIME_MACHINE_TIME_FORMAT = "2006-01-02 15:04:05+0700"
+
+func IsInActivity(now time.Time) bool {
+	format := TIME_MACHINE_TIME_FORMAT
+	startTime, _ := time.Parse(format, startDate)
+	endTime := startTime.Add(2 * 24 * time.Hour)
+	return now.After(startTime) && endTime.After(now)
+}
+
+func IsDayOne(now time.Time) bool {
+	format := TIME_MACHINE_TIME_FORMAT
+	startTime, _ := time.Parse(format, startDate)
+	endTime := startTime.Add(1 * 24 * time.Hour)
+	return now.After(startTime) && endTime.After(now)
+}
+
+func IsDayTwo(now time.Time) bool {
+	return IsInActivity(now) && !IsDayOne(now)
+}
+
+func getUserTime(usersession string) time.Time {
+
+	// for debug
+	format := TIME_MACHINE_TIME_FORMAT
+	startTime, _ := time.Parse(format, startDate)
+	return startTime.Add(18 * time.Hour)
+
+	return time.Now()
+}
