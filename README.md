@@ -9,3 +9,22 @@ Backend (fulfillment) is in /fulfillment folder, wrote on Golang.
 
 
 
+## Set env
+```
+cd fulfillment
+export GOPATH=`pwd`
+
+cd fulfillment/src/github.com/COSCUP/assistant
+dep ensure
+```
+
+
+## build and run
+
+```
+cd fulfillment/src/github.com/COSCUP/assistant/serverlet
+go build
+./serverlet
+
+
+```
