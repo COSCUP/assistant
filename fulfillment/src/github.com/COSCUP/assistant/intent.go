@@ -12,4 +12,5 @@ type IntentProcessor interface {
 
 var intentProcessorList = []IntentProcessor{
 	WelcomeIntentProcessor{},
+	HelpIntentProcessor{},
 }
