@@ -14,4 +14,5 @@ var intentProcessorList = []IntentProcessor{
 	WelcomeIntentProcessor{},
 	HelpIntentProcessor{},
 	RegisterIntentProcessor{},
+	AskProgramListByRoomIntentProcessor{},
 }

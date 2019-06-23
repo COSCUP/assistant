@@ -4,6 +4,8 @@ package assistant
 import (
 	"encoding/json"
 	"net/http"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type RoomNameType string
@@ -152,6 +154,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 	json.Unmarshal(data, &request)
 
 	for _, ip := range intentProcessorList {
+		log.Println(" ", ip.Name(), " ? ", request.QueryResult.Intent.DisplayName)
 		if ip.Name() == request.QueryResult.Intent.DisplayName {
 			// match
 			payload := ip.Payload(&request)

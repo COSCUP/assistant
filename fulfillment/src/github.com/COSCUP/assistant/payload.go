@@ -13,7 +13,7 @@ type HorizontalAlignment string
 const (
 	HorizontalAlignmentCenter   HorizontalAlignment = "CENTER"
 	HorizontalAlignmentLeading  HorizontalAlignment = "LEADING"
-	HorizontalAlignmentTrailing HorizontalAlignment = "TRAINLING"
+	HorizontalAlignmentTrailing HorizontalAlignment = "TRAILING"
 )
 
 type Cell map[string]interface{}
