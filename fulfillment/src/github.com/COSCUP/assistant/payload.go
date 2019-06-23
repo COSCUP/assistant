@@ -20,33 +20,38 @@ type Cell map[string]interface{}
 type Row map[string]interface{}
 type ColunmProperty map[string]interface{}
 
-func getListItemPayload(key string) map[string]interface{} {
+type ListItem map[string]interface{}
+
+type Image map[string]interface{}
+
+func getImagePayload(url, text string) Image {
 	return map[string]interface{}{
-		"title": key + "接下來的議程是 ",
-		"optionInfo": map[string]interface{}{
-			"key":      key + "接下來的議程是KEY",
-			"synonyms": []string{"s1" + key},
-		},
-		"description": "d1",
-		"image": map[string]interface{}{
-			"url":               "https://coscup.org/2019/_nuxt/img/c2f9236.png",
-			"accessibilityText": "text",
-		},
+		"url":               url,
+		"accessibilityText": text,
 	}
 }
 
-func getListSystemIntentPayload() map[string]interface{} {
+func getListItemPayload(title, key, description string, synonyms []string, image Image) ListItem {
+	return map[string]interface{}{
+		"title": title,
+		// "subTitle": "subtitle",
+		"optionInfo": map[string]interface{}{
+			"key":      key,
+			"synonyms": synonyms,
+		},
+		"description": description,
+		"image":       image,
+	}
+}
+
+func getListSystemIntentPayload(title string, items []ListItem) map[string]interface{} {
 	return map[string]interface{}{
 		"intent": "actions.intent.OPTION",
 		"data": map[string]interface{}{
 			"@type": "type.googleapis.com/google.actions.v2.OptionValueSpec",
 			"listSelect": map[string]interface{}{
-				"title": "list title",
-				"items": []map[string]interface{}{
-					getListItemPayload("IB101"),
-					getListItemPayload("IB102"),
-					getListItemPayload("IB103"),
-				},
+				"title": title,
+				"items": items,
 			},
 		},
 	}
