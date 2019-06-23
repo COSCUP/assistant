@@ -28,9 +28,9 @@ func IsDayTwo(now time.Time) bool {
 func getUserTime(usersession string) time.Time {
 
 	// for debug
-	format := TIME_MACHINE_TIME_FORMAT
-	startTime, _ := time.Parse(format, startDate)
-	return startTime.Add(18 * time.Hour)
+	// format := TIME_MACHINE_TIME_FORMAT
+	// startTime, _ := time.Parse(format, startDate)
+	// return startTime.Add(18 * time.Hour)
 
 	return time.Now()
 }

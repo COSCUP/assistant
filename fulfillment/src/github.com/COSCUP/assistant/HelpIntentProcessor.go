@@ -19,13 +19,18 @@ func (p HelpIntentProcessor) displayMessage() string {
 
 		return "現在是 Day 1 我可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
 	} else {
-		return "OAO"
+		return "活動前我可以告訴您註冊資訊，活動中可以告訴 您下個議程什麼時候開始，或者是 Telegram 連 結。"
 	}
 
 }
 
 func (p HelpIntentProcessor) speechMessage() string {
-	return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
+	if IsInActivity(getUserTime("")) {
+		return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
+
+	} else {
+		return "活動前我可以告訴您註冊資訊，活動中可以告訴 您下個議程什麼時候開始，或者是 Telegram 連結。"
+	}
 }
 
 func (p HelpIntentProcessor) getSuggsetionItemFromRoomName(roomName string) map[string]interface{} {
@@ -43,6 +48,12 @@ func (p HelpIntentProcessor) getSuggsetion() []map[string]interface{} {
 		getSuggestionPayload("好了謝謝"),
 		// getSuggestionPayload("321"),
 	}
+
+	if !IsInActivity(getUserTime("")) {
+		ret = append(ret, getSuggestionPayload("註冊要錢嗎"))
+		ret = append(ret, getSuggestionPayload("註冊什麼時候開始"))
+	}
+
 	var selectNumber = 5
 	for _, selectedIndex := range perm[:selectNumber] {
 		ret = append(ret, p.getSuggsetionItemFromRoomName(list.Rooms[selectedIndex].Zh.Name))
