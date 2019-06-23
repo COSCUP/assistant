@@ -184,7 +184,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 
 }
 
-func (r DialogflowRequest) getRoomName() RoomNameType {
+func (r DialogflowRequest) RoomName() RoomNameType {
 	return RoomNameType(r.QueryResult.Parameters["RoomName"])
 }
 

@@ -29,6 +29,19 @@ func (p AskProgramListByRoomIntentProcessor) getSuggsetion() []map[string]interf
 }
 
 func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
+	rs := []Row{
+		getRowPayload([]Cell{
+			getCellPayload("加密/解密 雜湊看 PHP 版本的演進"),
+			getCellPayload("13:00 ~ 13:50"),
+		}, true),
+		getRowPayload([]Cell{
+			getCellPayload("从 GRANK 到 GITRANK ， ..."),
+			getCellPayload("15:00 ~ 15:50"),
+		}, true),
+	}
+
+	roomName := input.RoomName()
+	title := "Room " + roomName
 
 	return map[string]interface{}{
 		"expectUserResponse": true,
@@ -41,17 +54,8 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
 
 				// getSimpleResponsePayload("123", "321"),
-				getTableCardResponsePayload("Room IB101", "簡易議程表",
-					[]Row{
-						getRowPayload([]Cell{
-							getCellPayload("加密/解密 雜湊看 PHP 版本的演進"),
-							getCellPayload("13:00 ~ 13:50"),
-						}, true),
-						getRowPayload([]Cell{
-							getCellPayload("从 GRANK 到 GITRANK ， ..."),
-							getCellPayload("15:00 ~ 15:50"),
-						}, true),
-					},
+				getTableCardResponsePayload(string(title), "簡易議程表",
+					rs,
 					[]ColunmProperty{
 						getColumnPropertyPayload("名稱", HorizontalAlignmentLeading),
 						getColumnPropertyPayload("時間", HorizontalAlignmentTrailing),
