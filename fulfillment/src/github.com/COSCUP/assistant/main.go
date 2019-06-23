@@ -6,15 +6,32 @@ import (
 	"net/http"
 )
 
+type RoomNameType string
+
+const (
+	RoomNameTypeIB101  RoomNameType = "IB101"
+	RoomNameTypeIB201  RoomNameType = "IB201"
+	RoomNameTypeIB202  RoomNameType = "IB202"
+	RoomNameTypeIB301  RoomNameType = "IB301"
+	RoomNameTypeIB302  RoomNameType = "IB302"
+	RoomNameTypeIB304  RoomNameType = "IB304"
+	RoomNameTypeIB305  RoomNameType = "IB305"
+	RoomNameTypeIB306  RoomNameType = "IB306"
+	RoomNameTypeIB401  RoomNameType = "IB401"
+	RoomNameTypeIB408  RoomNameType = "IB408"
+	RoomNameTypeIB501  RoomNameType = "IB501"
+	RoomNameTypeIB502  RoomNameType = "IB502"
+	RoomNameTypeIB503  RoomNameType = "IB503"
+	RoomNameTypeIE2102 RoomNameType = "IE2102"
+)
+
 type DialogflowRequest struct {
 	ResponseID  string `json:"responseId"`
 	QueryResult struct {
-		QueryText  string `json:"queryText"`
-		Parameters struct {
-			RoomName string `json:"RoomName"`
-		} `json:"parameters"`
-		AllRequiredParamsPresent string `json:"allRequiredParamsPresent"`
-		FulfillmentText          string `json:"fulfillmentText"`
+		QueryText                string            `json:"queryText"`
+		Parameters               map[string]string `json:"parameters"`
+		AllRequiredParamsPresent string            `json:"allRequiredParamsPresent"`
+		FulfillmentText          string            `json:"fulfillmentText"`
 		FulfillmentMessages      []struct {
 			Text struct {
 				Text []string `json:"text"`
@@ -162,6 +179,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 	// w.Write(r2)
 	writeDialogflowResponse(w, &response)
 
+}
+
+func (r DialogflowRequest) getRoomName() RoomNameType {
+	return RoomNameType(r.QueryResult.Parameters["RoomName"])
 }
 
 func writeDialogflowResponse(w http.ResponseWriter, dr *DialogflowResponse) {
