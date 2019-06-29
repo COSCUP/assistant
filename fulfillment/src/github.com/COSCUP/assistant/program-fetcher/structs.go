@@ -75,3 +75,13 @@ type ProgramsResponedPayload struct {
 	Rooms        []Room        `json:"rooms"`
 	Tags         []Tag         `json:"tags"`
 }
+
+func (p *ProgramsResponedPayload) GetSessionByID(id string) *Session {
+	for _, s := range p.Sessions {
+		if s.ID == id {
+			t := s
+			return &t
+		}
+	}
+	return nil
+}

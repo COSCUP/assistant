@@ -1,5 +1,10 @@
 package assistant
 
+import (
+	"github.com/COSCUP/assistant/program-fetcher"
+	log "github.com/Sirupsen/logrus"
+)
+
 type AskProgramByProgramIntentProcessor struct {
 }
 
@@ -8,11 +13,11 @@ func (AskProgramByProgramIntentProcessor) Name() string {
 	return "Intent Ask Program by Program"
 }
 
-func (p AskProgramByProgramIntentProcessor) displayMessage() string {
-	return "「Software Packaging for Cross OS  Distribution : Build Debian Package in  Container for Example」的議程資訊如下："
+func (p AskProgramByProgramIntentProcessor) displayMessage(sessionTitle string) string {
+	return "「" + sessionTitle + "」的議程資訊如下："
 }
 
-func (p AskProgramByProgramIntentProcessor) speechMessage() string {
+func (p AskProgramByProgramIntentProcessor) speechMessage(sessionTitle string) string {
 	return "議程資訊如下"
 }
 
@@ -30,25 +35,36 @@ func (p AskProgramByProgramIntentProcessor) getSuggsetion() []map[string]interfa
 }
 
 func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
+	perviousDisplayedSessionListInfo := input.Context("pervious_session_list")
+	log.Println("perviousDisplayedSessionList:", perviousDisplayedSessionListInfo)
+	number := input.SelectedNumber()
+	selectedID := ""
+	list := perviousDisplayedSessionListInfo["list"].([]interface{})
 
+	if number >= 1 && len(list) > number-1 {
+		//
+		selectedID = list[number-1].(string)
+	}
+
+	prog, _ := fetcher.GetPrograms()
+	sessionInfo := prog.GetSessionByID(selectedID)
+	title := sessionInfo.Zh.Title
+	desc := sessionInfo.Zh.Description
+	timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+	subTitle := sessionInfo.Room + " " + timeLine
 	return map[string]interface{}{
 		"expectUserResponse": true,
 
 		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
-				getSimpleResponsePayload(p.speechMessage(), p.displayMessage()),
+				getSimpleResponsePayload(p.speechMessage(title), p.displayMessage(title)),
 				getBasicCardResponsePayload(
-					"FLOSS! not only Linux and hackers!!",
-					"IB503 11:20 ~ 11:50",
-					"因為工作需要，時常要打包 Debian package。"+
-						"但開發人員平時熟悉、使用的作業系統，不一定是 Debian 系列的 Linux distribution。"+
-						"單純為了打包 Debian package，而另外安裝一個 Debian 系列的作業系統，似乎是不合成本的作法。 "+
-						"有賴於 Container 技術的興起與流行，它提供了一個乾淨、簡潔又輕便的方案。"+
-						"而本次將分享開發人員在 Arch Linux 上用 docker 工具，"+
-						"從 Docker Hub 取得相對輕巧的 Debian image 為基底，並將它執行成為一個 Container。且在裡頭準備相對應的「工具」、「權限」與「環境」的經驗，最後實際打包出一個 Debian package 當作範例。",
+					title,
+					subTitle,
+					desc,
 					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "講者照片",
-					"議程網頁", "https://coscup.org/2019/programs/63d5742d-0c03-4849-bfb2-24cbb68f66a1", "CROPPED"),
+					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
 
 				// getSimpleResponsePayload("123", "321"),
 				// getTableCardResponsePayload("title", "subtitle",

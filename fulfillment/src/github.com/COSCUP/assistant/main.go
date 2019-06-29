@@ -4,6 +4,7 @@ package assistant
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -40,10 +41,10 @@ type DialogflowContext struct {
 type DialogflowRequest struct {
 	ResponseID  string `json:"responseId"`
 	QueryResult struct {
-		QueryText                string            `json:"queryText"`
-		Parameters               map[string]string `json:"parameters"`
-		AllRequiredParamsPresent string            `json:"allRequiredParamsPresent"`
-		FulfillmentText          string            `json:"fulfillmentText"`
+		QueryText                string                 `json:"queryText"`
+		Parameters               map[string]interface{} `json:"parameters"`
+		AllRequiredParamsPresent string                 `json:"allRequiredParamsPresent"`
+		FulfillmentText          string                 `json:"fulfillmentText"`
 		FulfillmentMessages      []struct {
 			Text struct {
 				Text []string `json:"text"`
@@ -201,24 +202,51 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 }
 
 func (r DialogflowRequest) RoomName() RoomNameType {
-	return RoomNameType(r.QueryResult.Parameters["RoomName"])
+	return RoomNameType(r.QueryResult.Parameters["RoomName"].(string))
 }
 
 func (r DialogflowRequest) UserId() string {
 	return r.OriginalDetectIntentRequest.Payload.Conversation.ConversationID
 }
 
-func (r DialogflowRequest) AddContext(key string, lifespanCount int) {
-	r.QueryResult.OutputContexts = append(r.QueryResult.OutputContexts,
-		DialogflowContext{
-			Name:          "projects/coscup/agent/sessions/ABwppHH_zjv8cpuXq5jWgZ3jX3Hw4D96diVEz4vD0cdKiiDu84s6fjNt0y1XHxCpGYk51sMw/contexts/test",
-			LifespanCount: 5,
-			Parameters: map[string]interface{}{
-				"key": "value",
-			},
-		},
-	)
+func (r DialogflowRequest) Context(key string) map[string]interface{} {
+	for _, s := range r.QueryResult.OutputContexts {
+		if strings.HasSuffix(s.Name, "/"+key) {
+			return s.Parameters
+		}
+	}
+	return nil
+
 }
+
+func (r DialogflowRequest) SelectedNumber() int {
+	switch v := r.QueryResult.Parameters["number"].(type) {
+	case string:
+		if v == "" {
+			return 0
+		}
+		// todo strconv
+		return 0
+	case float64:
+		return int(v)
+	default:
+		return 0
+
+	}
+
+}
+
+// func (r DialogflowRequest) AddContext(key string, lifespanCount int) {
+// 	r.QueryResult.OutputContexts = append(r.QueryResult.OutputContexts,
+// 		DialogflowContext{
+// 			Name:          "projects/coscup/agent/sessions/ABwppHH_zjv8cpuXq5jWgZ3jX3Hw4D96diVEz4vD0cdKiiDu84s6fjNt0y1XHxCpGYk51sMw/contexts/test",
+// 			LifespanCount: 5,
+// 			Parameters: map[string]interface{}{
+// 				"key": "value",
+// 			},
+// 		},
+// 	)
+// }
 
 func writeDialogflowResponse(w http.ResponseWriter, dr *DialogflowResponse) {
 	data, _ := json.Marshal(dr)
