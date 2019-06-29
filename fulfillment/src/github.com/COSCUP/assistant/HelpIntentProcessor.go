@@ -44,7 +44,7 @@ func (p HelpIntentProcessor) getSuggsetion(input *DialogflowRequest) []map[strin
 	perm := rand.Perm(len(list.Rooms))
 
 	ret := []map[string]interface{}{
-		getSuggestionPayload("好了謝謝"),
+		getSuggestionPayload("第一天有哪些議程"),
 		// getSuggestionPayload("321"),
 	}
 
@@ -57,6 +57,8 @@ func (p HelpIntentProcessor) getSuggsetion(input *DialogflowRequest) []map[strin
 	for _, selectedIndex := range perm[:selectNumber] {
 		ret = append(ret, p.getSuggsetionItemFromRoomName(list.Rooms[selectedIndex].Zh.Name))
 	}
+
+	ret = append(ret, getSuggestionPayload("好了謝謝"))
 
 	return ret
 }

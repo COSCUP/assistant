@@ -24,4 +24,5 @@ var intentProcessorList = []IntentProcessor{
 
 	DefaultFallbackIntent{},
 	LocationByLocationNameIntentProcessor{},
+	QuitIntentProcessor{},
 }
