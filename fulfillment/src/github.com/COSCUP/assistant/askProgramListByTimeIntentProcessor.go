@@ -3,6 +3,7 @@ package assistant
 import (
 	"github.com/COSCUP/assistant/program-fetcher"
 
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"sort"
 	"time"
@@ -17,28 +18,58 @@ func (AskProgramListByTimeIntentProcessor) Name() string {
 }
 
 func (p AskProgramListByTimeIntentProcessor) displayMessage(t *time.Time) string {
-	timeStr := t.Format("15點04分")
+	timeString := t.Format("15點04分")
+	if timeString == "00點00分" {
 
-	return timeStr + "之後的議程資訊如下："
+		if IsDayOne(*t) {
+			return "第一天的議程資訊如下"
+		} else {
+			return "第二天的議程資訊如下"
+		}
+	}
+
+	return timeString + "之後的議程資訊如下："
 }
 
 func (p AskProgramListByTimeIntentProcessor) speechMessage(t *time.Time) string {
-	timeStr := t.Format("15點04分")
-	return timeStr + "之後的議程資訊如下："
+	timeString := t.Format("15點04分")
+	if timeString == "00點00分" {
+
+		if IsDayOne(*t) {
+			return "第一天的議程資訊如下"
+		} else {
+			return "第二天的議程資訊如下"
+		}
+	}
+	return timeString + "之後的議程資訊如下："
 }
 
 func (p AskProgramListByTimeIntentProcessor) getSuggsetion() []map[string]interface{} {
-	return []map[string]interface{}{
+	ret := []map[string]interface{}{
+		getSuggestionPayload("告訴我第一項議程的詳細資訊"),
 		getSuggestionPayload("你會做什麼"),
+
 		// getSuggestionPayload("321"),
 	}
+	return ret
+}
+
+func (p AskProgramListByTimeIntentProcessor) getSuggsetionWithNoSession() []map[string]interface{} {
+	ret := []map[string]interface{}{
+		getSuggestionPayload("第一天有哪些議程"),
+		getSuggestionPayload("第二天有哪些議程"),
+		getSuggestionPayload("你會做什麼"),
+
+		// getSuggestionPayload("321"),
+	}
+	return ret
 }
 
 func (p AskProgramListByTimeIntentProcessor) getListSystemIntentPayload(listTitle string, sessions []fetcher.Session) map[string]interface{} {
 	// list item must be 2 ~ 30
 	retList := []ListItem{}
-	for _, sessionInfo := range sessions {
-		title := sessionInfo.Zh.Title
+	for i, sessionInfo := range sessions {
+		title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
 		desc := sessionInfo.Zh.Description
 		timeLine := getSessionTimeLineWithDay(&sessionInfo)
 		subTitle := sessionInfo.Room + " " + timeLine
@@ -98,6 +129,12 @@ func (p AskProgramListByTimeIntentProcessor) Payload(input *DialogflowRequest) m
 		t = &tt
 	}
 
+	if t == nil {
+
+		tt := getUserTime(input)
+		t = &tt
+	}
+
 	coscupPrograms, _ := fetcher.GetPrograms()
 
 	log.Println("filter start time:", t)
@@ -117,11 +154,42 @@ func (p AskProgramListByTimeIntentProcessor) Payload(input *DialogflowRequest) m
 		dayTypeString = "Day 2"
 	}
 
-	listTitle := "COSCUP 2019 " + dayTypeString + " " + t.Format("15:04")
+	timeString := t.Format("15:04")
+	if timeString == "00:00" {
+		if IsDayOne(*t) {
+			timeString = "🐱"
+		} else {
+			timeString = "🐰"
+		}
+	}
+
+	listTitle := "COSCUP 2019 " + dayTypeString + " " + timeString
+
+	const defaultDisplayNum = 15
+	var sliced []fetcher.Session
+	if len(filtered) < 15 {
+		sliced = filtered
+	} else {
+		sliced = filtered[:15]
+	}
+
+	log.Println("sliced length: ", len(sliced))
+
+	if len(sliced) == 1 {
+		return p.PayloadWithOneSession(input, sliced, t)
+	} else if len(sliced) == 0 {
+		return p.PayloadWithNoSession(input)
+	}
+
+	sessionIdList := []string{}
+
+	for _, session := range sliced {
+		sessionIdList = append(sessionIdList, session.ID)
+	}
 
 	return map[string]interface{}{
 		"expectUserResponse": true,
-		"systemIntent":       p.getListSystemIntentPayload(listTitle, filtered[:15]),
+		"systemIntent":       p.getListSystemIntentPayload(listTitle, sliced),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
 				getSimpleResponsePayload(p.speechMessage(t), p.displayMessage(t)),
@@ -148,7 +216,70 @@ func (p AskProgramListByTimeIntentProcessor) Payload(input *DialogflowRequest) m
 				// ),
 			},
 			"suggestions": p.getSuggsetion(),
-			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
+		},
+
+		"outputContexts": map[string]interface{}{
+			"pervious_session_list": map[string]interface{}{
+				"list": sessionIdList,
+			},
 		},
 	}
+}
+
+func (p AskProgramListByTimeIntentProcessor) PayloadWithOneSession(input *DialogflowRequest, sliced []fetcher.Session, t *time.Time) map[string]interface{} {
+	sessionInfo := sliced[0]
+	title := sessionInfo.Zh.Title
+	desc := sessionInfo.Zh.Description
+	timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+	subTitle := sessionInfo.Room + " " + timeLine
+	sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
+	ret := map[string]interface{}{
+		"expectUserResponse": true,
+
+		// "systemIntent": getListSystemIntentPayload(),
+		"richResponse": map[string]interface{}{
+			"items": []map[string]interface{}{
+				getSimpleResponsePayload(p.speechMessage(t), p.displayMessage(t)),
+
+				getBasicCardResponsePayload(
+					title,
+					subTitle,
+					desc,
+					sessionPhotoUrl, "講者照片",
+					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
+			},
+			"suggestions": p.getSuggsetion(),
+		},
+		"outputContexts": map[string]interface{}{
+			"selected_session": map[string]interface{}{
+				"id": sessionInfo.ID,
+			},
+		},
+	}
+	return ret
+}
+
+func (p AskProgramListByTimeIntentProcessor) displayMessageWithNoSession() string {
+	return "接下來沒有任何議程了"
+}
+
+func (p AskProgramListByTimeIntentProcessor) speechMessageWithNoFavoriteList() string {
+	return "接下來沒有任何議程了"
+}
+
+func (p AskProgramListByTimeIntentProcessor) PayloadWithNoSession(input *DialogflowRequest) map[string]interface{} {
+
+	ret := map[string]interface{}{
+		"expectUserResponse": true,
+
+		// "systemIntent": getListSystemIntentPayload(),
+		"richResponse": map[string]interface{}{
+			"items": []map[string]interface{}{
+				getSimpleResponsePayload(p.speechMessageWithNoFavoriteList(), p.displayMessageWithNoSession()),
+			},
+			"suggestions": p.getSuggsetionWithNoSession(),
+		},
+	}
+	return ret
 }

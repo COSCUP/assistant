@@ -18,7 +18,7 @@ func IsDayOne(now time.Time) bool {
 	format := TIME_MACHINE_TIME_FORMAT
 	startTime, _ := time.Parse(format, startDate)
 	endTime := startTime.Add(1 * 24 * time.Hour)
-	return now.After(startTime) && endTime.After(now)
+	return !now.Before(startTime) && endTime.After(now)
 }
 
 func IsDayTwo(now time.Time) bool {

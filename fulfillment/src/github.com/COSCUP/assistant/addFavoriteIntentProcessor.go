@@ -22,11 +22,24 @@ func (p AddFavoriteIntentProcessor) speechMessage(sessionTitle string) string {
 	return "已幫您把議程加入訂閱列表，目前列表如下："
 }
 
-func (p AddFavoriteIntentProcessor) getSuggsetion() []map[string]interface{} {
-	return []map[string]interface{}{
-		getSuggestionPayload("你會做什麼"),
-		// getSuggestionPayload("321"),
+func (p AddFavoriteIntentProcessor) getSuggsetion(favList []interface{}) []map[string]interface{} {
+
+	ret := []map[string]interface{}{}
+	prog, _ := fetcher.GetPrograms()
+	for _, it := range favList {
+		sessionInfo := prog.GetSessionByID(it.(string))
+		dt := "第一天"
+		if IsDayTwo(sessionInfo.Start) {
+			dt = "第二天"
+		}
+		text := dt + sessionInfo.End.Format("15點4分之後還有什麼議程")
+		ret = append(ret, getSuggestionPayload(text))
+
 	}
+	ret = append(ret, getSuggestionPayload("你會做什麼"))
+	ret = append(ret, getSuggestionPayload("好了謝謝"))
+
+	return ret
 }
 
 func (p AddFavoriteIntentProcessor) getListSystemIntentPayload() map[string]interface{} {
@@ -82,7 +95,7 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED",
 				// ),
 			},
-			"suggestions": p.getSuggsetion(),
+			"suggestions": p.getSuggsetion(favList),
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},
 		"outputContexts": map[string]interface{}{
@@ -95,9 +108,9 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 	if len(favList) >= 2 {
 		ll := []ListItem{}
 
+		prog, _ := fetcher.GetPrograms()
 		for i, id := range favList {
 
-			prog, _ := fetcher.GetPrograms()
 			sessionInfo := prog.GetSessionByID(id.(string))
 			title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
 			desc := sessionInfo.Zh.Description
@@ -109,7 +122,9 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 			subTitle := sessionInfo.Room + " " + timeLine
 			sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
 
-			item := getListItemPayload(title, id.(string), subTitle+"\n"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
+			item := getListItemPayload(title, id.(string),
+				subTitle+"\n"+desc, []string{title},
+				getImagePayload(sessionPhotoUrl, "講者照片"))
 			ll = append(ll, item)
 
 		}
@@ -149,7 +164,7 @@ func (p AddFavoriteIntentProcessor) PayloadWithOneFavorite(input *DialogflowRequ
 					sessionPhotoUrl, "講者照片",
 					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
 			},
-			"suggestions": p.getSuggsetion(),
+			"suggestions": p.getSuggsetion(favList),
 		},
 
 		"outputContexts": map[string]interface{}{
