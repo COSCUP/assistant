@@ -31,6 +31,12 @@ const (
 	RoomNameTypeIE2102 RoomNameType = "IE2102"
 )
 
+type DialogflowContext struct {
+	Name          string                 `json:"name"`
+	LifespanCount int                    `json:"lifespanCount"`
+	Parameters    map[string]interface{} `json:"parameters"`
+}
+
 type DialogflowRequest struct {
 	ResponseID  string `json:"responseId"`
 	QueryResult struct {
@@ -43,15 +49,8 @@ type DialogflowRequest struct {
 				Text []string `json:"text"`
 			} `json:"text"`
 		} `json:"fulfillmentMessages"`
-		OutputContexts []struct {
-			Name          string `json:"name"`
-			LifespanCount string `json:"lifespanCount,omitempty"`
-			Parameters    struct {
-				RoomName         string `json:"RoomName"`
-				RoomNameOriginal string `json:"RoomName.original"`
-			} `json:"parameters"`
-		} `json:"outputContexts"`
-		Intent struct {
+		OutputContexts []DialogflowContext `json:"outputContexts"`
+		Intent         struct {
 			Name        string `json:"name"`
 			DisplayName string `json:"displayName"`
 		} `json:"intent"`
@@ -133,13 +132,7 @@ type DialogflowResponse struct {
 	// 	Text string `json:"text"`
 	// } `json:"slack"`
 	// } `json:"payload",emitempty`
-	// OutputContexts []struct {
-	// 	Name          string `json:"name"`
-	// 	LifespanCount string `json:"lifespanCount"`
-	// 	Parameters    struct {
-	// 		Param string `json:"param"`
-	// 	} `json:"parameters"`
-	// } `json:"outputContexts",emitempty`
+	OutputContexts []DialogflowContext `json:"outputContexts",emitempty`
 	// FollowupEventInput *struct {
 	// 	Name         string `json:"name"`
 	// 	LanguageCode string `json:"languageCode"`
@@ -162,6 +155,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 		if ip.Name() == request.QueryResult.Intent.DisplayName {
 			// match
 			payload := ip.Payload(&request)
+
 			response := DialogflowResponse{
 				FulfillmentText: "test",
 				Source:          request.OriginalDetectIntentRequest.Source,
@@ -169,11 +163,29 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 					"google": payload,
 				},
 			}
+
+			log.Println("outputContexts", payload["outputContexts"])
+
+			contexts, ok := payload["outputContexts"].(map[string]interface{})
+			if ok {
+				dContexts := []DialogflowContext{}
+				for key, context := range contexts {
+					dContexts = append(dContexts,
+						DialogflowContext{
+							Name:          request.Session + "/contexts/" + key,
+							LifespanCount: 5,
+							Parameters:    context.(map[string]interface{}),
+						})
+				}
+
+				response.OutputContexts = dContexts
+			}
 			writeDialogflowResponse(w, &response)
 
 			return
 		}
 	}
+
 	response := DialogflowResponse{
 		FulfillmentText: "intent " + request.QueryResult.Intent.DisplayName + " not implement",
 		Source:          request.OriginalDetectIntentRequest.Source,
@@ -194,6 +206,18 @@ func (r DialogflowRequest) RoomName() RoomNameType {
 
 func (r DialogflowRequest) UserId() string {
 	return r.OriginalDetectIntentRequest.Payload.Conversation.ConversationID
+}
+
+func (r DialogflowRequest) AddContext(key string, lifespanCount int) {
+	r.QueryResult.OutputContexts = append(r.QueryResult.OutputContexts,
+		DialogflowContext{
+			Name:          "projects/coscup/agent/sessions/ABwppHH_zjv8cpuXq5jWgZ3jX3Hw4D96diVEz4vD0cdKiiDu84s6fjNt0y1XHxCpGYk51sMw/contexts/test",
+			LifespanCount: 5,
+			Parameters: map[string]interface{}{
+				"key": "value",
+			},
+		},
+	)
 }
 
 func writeDialogflowResponse(w http.ResponseWriter, dr *DialogflowResponse) {

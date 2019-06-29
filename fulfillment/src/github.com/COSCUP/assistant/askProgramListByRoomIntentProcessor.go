@@ -15,30 +15,56 @@ func (AskProgramListByRoomIntentProcessor) Name() string {
 	return "Intent Ask Program List by Room"
 }
 
-func (p AskProgramListByRoomIntentProcessor) displayMessage(input *DialogflowRequest) string {
+func (p AskProgramListByRoomIntentProcessor) displayMessage(input *DialogflowRequest, session *fetcher.Session) string {
 	t := getUserTime(input.UserId())
 	timeString := t.Format("現在是1月02日15點04分")
 	roomName := input.RoomName()
+	if session == nil {
+		return timeString + "，" + roomName.String() + "找不到下一個議程。"
+	}
 
-	return timeString + "，" + roomName.String() + "的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
+	timeAbbr := session.Start.Format("15:04")
+
+	return timeString + "，" + roomName.String() + "的下個議程「" + session.Zh.Title + "」將在" + timeAbbr + "開始。"
 }
 
-func (p AskProgramListByRoomIntentProcessor) speechMessage(input *DialogflowRequest) string {
+func (p AskProgramListByRoomIntentProcessor) speechMessage(input *DialogflowRequest, session *fetcher.Session) string {
 	t := getUserTime(input.UserId())
 	timeString := t.Format("現在是1月02日15點04分")
 	roomName := input.RoomName()
+	if session == nil {
+		return timeString + "，" + roomName.String() + "找不到下一個議程。"
+	}
 
-	return timeString + "，" + roomName.String() + "的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
+	timeAbbr := session.Start.Format("15:04")
+
+	return timeString + "，" + roomName.String() + "的下個議程「" + session.Zh.Title + "」將在" + timeAbbr + "開始。"
 }
 
-func (p AskProgramListByRoomIntentProcessor) getSuggsetion() []map[string]interface{} {
-	return []map[string]interface{}{
+func (p AskProgramListByRoomIntentProcessor) getSuggsetion(input *DialogflowRequest, sessionLength int) []map[string]interface{} {
+	ret := []map[string]interface{}{
 		getSuggestionPayload("你會做什麼"),
 		// getSuggestionPayload("321"),
 	}
+
+	if sessionLength > 3 {
+		ret = append(ret, getSuggestionPayload("告訴我第二場那場的資訊"))
+	}
+
+	if input.RoomName() != "IB201" {
+		ret = append(ret, getSuggestionPayload("IB101的議程資訊"))
+	} else {
+		ret = append(ret, getSuggestionPayload("IB201的議程資訊"))
+	}
+
+	return ret
 }
 
 func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
+	userStorage := NewUserStorageFromDialogflowRequest(input)
+	userConversationToken := NewConversationTokenFromDialogflowRequest(input)
+	log.Println("user storage: ", userStorage, "token", userConversationToken)
+
 	t := getUserTime(input.UserId())
 	roomName := input.RoomName()
 	log.Println("user time: ", t)
@@ -46,22 +72,22 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 
 	log.Println("sessions length: ", len(coscupPrograms.Sessions))
 
-	filited := []fetcher.Session{}
+	filtered := []fetcher.Session{}
 	for _, session := range coscupPrograms.Sessions {
-		log.Println("comparing:", session.Room, roomName)
+		// log.Println("comparing:", session.Room, roomName)
 		if session.Room != roomName.String() {
 			continue
 		}
 
-		filited = append(filited, session)
+		filtered = append(filtered, session)
 	}
 
-	log.Println("filited sessions length: ", len(filited))
-	sort.Sort(fetcher.ByStartTime(filited))
+	log.Println("filtered sessions length: ", len(filtered))
+	sort.Sort(fetcher.ByStartTime(filtered))
 
 	rs := []Row{}
 
-	for _, session := range filited {
+	for _, session := range filtered {
 
 		title := session.Zh.Title
 		timeLine := session.Start.Format("15:04") + "~" + session.End.Format("15:04")
@@ -75,14 +101,25 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 	}
 
 	title := "Room " + roomName
+	var firstSession *fetcher.Session
+	if len(filtered) > 0 {
+		firstSession = &filtered[0]
+	}
 
+	sessionIdList := []string{}
+
+	for _, session := range filtered {
+		sessionIdList = append(sessionIdList, session.ID)
+	}
+
+	// userConversationToken.AddPreviousDisplaySessionList(filtered)
 	return map[string]interface{}{
 		"expectUserResponse": true,
-
+		"userStorage":        userStorage.EncodeToString(),
 		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
-				getSimpleResponsePayload(p.speechMessage(input), p.displayMessage(input)),
+				getSimpleResponsePayload(p.speechMessage(input, firstSession), p.displayMessage(input, firstSession)),
 				// getBasicCardResponsePayload("title", "subtitle", "formattedText",
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
 
@@ -91,13 +128,19 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 					rs,
 					[]ColunmProperty{
 						getColumnPropertyPayload("名稱", HorizontalAlignmentLeading),
-						getColumnPropertyPayload("時間", HorizontalAlignmentTrailing),
+						getColumnPropertyPayload("開始時間", HorizontalAlignmentTrailing),
 					},
 					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "COSCUP LOGO", "議程網頁", "https://coscup.org/2019/programs/", "CROPPED",
 				),
 			},
-			"suggestions": p.getSuggsetion(),
+			"suggestions": p.getSuggsetion(input, len(filtered)),
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
+		},
+
+		"outputContexts": map[string]interface{}{
+			"pervious_session_list": map[string]interface{}{
+				"list": sessionIdList,
+			},
 		},
 	}
 }
