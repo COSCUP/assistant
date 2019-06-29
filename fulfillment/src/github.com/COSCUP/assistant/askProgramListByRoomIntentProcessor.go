@@ -62,8 +62,8 @@ func (p AskProgramListByRoomIntentProcessor) getSuggsetion(input *DialogflowRequ
 
 func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
 	userStorage := NewUserStorageFromDialogflowRequest(input)
-	userConversationToken := NewConversationTokenFromDialogflowRequest(input)
-	log.Println("user storage: ", userStorage, "token", userConversationToken)
+	// userConversationToken := NewConversationTokenFromDialogflowRequest(input)
+	log.Println("user storage: ", userStorage)
 
 	t := getUserTime(input.UserId())
 	roomName := input.RoomName()

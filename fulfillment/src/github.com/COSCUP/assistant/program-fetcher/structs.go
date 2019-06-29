@@ -22,7 +22,7 @@ type Session struct {
 	Record    string              `json:"record"`
 	Zh        SessionLocalization `json:"zh"`
 	En        SessionLocalization `json:"en"`
-	Speakers  []interface{}       `json:"speakers"`
+	Speakers  []string            `json:"speakers"`
 	Tags      []string            `json:"tags"`
 }
 
@@ -84,4 +84,30 @@ func (p *ProgramsResponedPayload) GetSessionByID(id string) *Session {
 		}
 	}
 	return nil
+}
+
+func (p *ProgramsResponedPayload) GetSpeakerByID(id string) *Speaker {
+	for _, s := range p.Speakers {
+		if s.ID == id {
+			t := s
+			return &t
+		}
+	}
+	return nil
+}
+
+func (p *Session) SpeakerPhotoUrl() string {
+	if len(p.Speakers) == 0 {
+
+		return "https://coscup.org/2019/_nuxt/img/c2f9236.png"
+	}
+	speakerId := p.Speakers[0]
+
+	prog, _ := GetPrograms()
+	speaker := prog.GetSpeakerByID(speakerId)
+	if speaker != nil {
+		return speaker.Avatar
+	}
+
+	return "https://coscup.org/2019/_nuxt/img/c2f9236.png"
 }

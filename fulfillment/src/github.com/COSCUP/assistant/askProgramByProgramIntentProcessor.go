@@ -52,6 +52,9 @@ func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) ma
 	desc := sessionInfo.Zh.Description
 	timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
 	subTitle := sessionInfo.Room + " " + timeLine
+
+	sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
 	return map[string]interface{}{
 		"expectUserResponse": true,
 
@@ -63,7 +66,7 @@ func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) ma
 					title,
 					subTitle,
 					desc,
-					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "講者照片",
+					sessionPhotoUrl, "講者照片",
 					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
 
 				// getSimpleResponsePayload("123", "321"),
@@ -81,7 +84,13 @@ func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) ma
 				// ),
 			},
 			"suggestions": p.getSuggsetion(),
+
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
+		},
+		"outputContexts": map[string]interface{}{
+			"selected_session": map[string]interface{}{
+				"id": selectedID,
+			},
 		},
 	}
 }

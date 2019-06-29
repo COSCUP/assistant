@@ -63,9 +63,10 @@ type DialogflowRequest struct {
 		Version string `json:"version"`
 		Payload struct {
 			User struct {
-				UserID   string `json:"userId"`
-				Locale   string `json:"locale"`
-				LastSeen string `json:"lastSeen"`
+				UserID      string `json:"userId"`
+				Locale      string `json:"locale"`
+				LastSeen    string `json:"lastSeen"`
+				UserStorage string `json:"userStorage"`
 			} `json:"user"`
 			Conversation struct {
 				ConversationID    string `json:"conversationId"`
