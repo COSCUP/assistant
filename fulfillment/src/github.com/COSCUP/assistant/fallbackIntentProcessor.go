@@ -114,11 +114,7 @@ func (p DefaultFallbackIntent) Payload(input *DialogflowRequest) map[string]inte
 
 func (p DefaultFallbackIntent) PayloadWithQueryProgram(input *DialogflowRequest) map[string]interface{} {
 	sessionId := input.GetSessionIdFromOptionResult()
-	log.Println("session id:", sessionId)
-
-	if sessionId != "" {
-		return p.PayloadWithQueryProgram(input)
-	}
+	log.Println("PayloadWithQueryProgram session id:", sessionId)
 	prog, _ := fetcher.GetPrograms()
 	sessionInfo := prog.GetSessionByID(sessionId)
 	title := sessionInfo.Zh.Title
@@ -127,6 +123,8 @@ func (p DefaultFallbackIntent) PayloadWithQueryProgram(input *DialogflowRequest)
 	subTitle := sessionInfo.Room + " " + timeLine
 
 	sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
+	inFavoriteList := NewUserStorageFromDialogflowRequest(input).isSessionIdInFavorite(sessionId)
 
 	return map[string]interface{}{
 		"expectUserResponse": true,
@@ -156,14 +154,14 @@ func (p DefaultFallbackIntent) PayloadWithQueryProgram(input *DialogflowRequest)
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED",
 				// ),
 			},
-			"suggestions": p.getSuggsetion(),
-
-			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
+			"suggestions": getSuggestionWithSession(inFavoriteList, sessionInfo),
 		},
 		"outputContexts": map[string]interface{}{
 			"selected_session": map[string]interface{}{
 				"id": sessionId,
 			},
+
+			"ask_program": map[string]interface{}{},
 		},
 	}
 }

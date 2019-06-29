@@ -13,7 +13,7 @@ func (p RegisterIntentProcessor) displayMessage() string {
 }
 
 func (p RegisterIntentProcessor) speechMessage() string {
-	return "報名期間由2019年7月11日到8月10日，地點在臺灣科技大學，免費報名。"
+	return "報名期間為2019年7月11日到8月10日，地點在臺灣科技大學，免費報名。"
 }
 
 func (p RegisterIntentProcessor) getSuggsetion() []map[string]interface{} {
@@ -36,7 +36,7 @@ func (p RegisterIntentProcessor) Payload(input *DialogflowRequest) map[string]in
 					// "地點： 台灣科技大學 國際大樓\n"+
 					// "註冊時間： 2019 年 7 月 11  日 ~ 8 月 10 日\n"+
 					// "票價： 免費",
-					"報名期間由2019年7月11日到8月10日，地點在臺灣科技大學，免費報名。",
+					"報名期間為2019年7月11日到8月10日\n，地點在臺灣科技大學，免費報名。",
 					"https://t.kfs.io/upload_images/98464/Screenshot_2019-05-25_COSCUP_2019_large.png",
 					"報名介紹圖片", "報名", "https://coscup2019.kktix.cc/events/coscup2019regist", "CROPPED"),
 

@@ -21,19 +21,28 @@ func (p AskProgramByProgramIntentProcessor) speechMessage(sessionTitle string) s
 	return "議程資訊如下"
 }
 
-func (p AskProgramByProgramIntentProcessor) getSuggsetion() []map[string]interface{} {
-	ret := []map[string]interface{}{
-		getSuggestionPayload("🌟我有興趣"),
-		getSuggestionPayload("IB503在哪"),
-		getSuggestionPayload("IB503下一場議程什麼時候開始"),
-		getSuggestionPayload("好了謝謝"),
-		// getSuggestionPayload("你會做什麼"),
-		// getSuggestionPayload("321"),
+func (p AskProgramByProgramIntentProcessor) getSuggsetion(inFavoriteList bool, session *fetcher.Session) []map[string]interface{} {
+	return getSuggestionWithSession(inFavoriteList, session)
+}
+func getSuggestionWithSession(inFavoriteList bool, session *fetcher.Session) []map[string]interface{} {
+	ret := []map[string]interface{}{}
+
+	if !inFavoriteList {
+		ret = append(ret, getSuggestionPayload("🌟我有興趣"))
+	} else {
+		ret = append(ret, getSuggestionPayload("移除議程"))
 	}
 
+	ret = append(ret, getSuggestionPayload(session.Room+"在哪"))
+	ret = append(ret, getSuggestionPayload(session.Room+"的下一場議程什麼時候開始"))
+	dt := "第一天"
+	if IsDayTwo(session.Start) {
+		dt = "第二天"
+	}
+	timeLine := dt + session.End.Format("15:04")
+	ret = append(ret, getSuggestionPayload(timeLine+"之後有哪些議程"))
 	return ret
 }
-
 func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
 	perviousDisplayedSessionListInfo := input.Context("pervious_session_list")
 	log.Println("perviousDisplayedSessionList:", perviousDisplayedSessionListInfo)
@@ -54,6 +63,8 @@ func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) ma
 	subTitle := sessionInfo.Room + " " + timeLine
 
 	sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
+	inFavoriteList := NewUserStorageFromDialogflowRequest(input).isSessionIdInFavorite(selectedID)
 
 	return map[string]interface{}{
 		"expectUserResponse": true,
@@ -83,7 +94,7 @@ func (p AskProgramByProgramIntentProcessor) Payload(input *DialogflowRequest) ma
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED",
 				// ),
 			},
-			"suggestions": p.getSuggsetion(),
+			"suggestions": p.getSuggsetion(inFavoriteList, sessionInfo),
 
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},

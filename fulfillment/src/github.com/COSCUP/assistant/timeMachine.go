@@ -25,7 +25,7 @@ func IsDayTwo(now time.Time) bool {
 	return IsInActivity(now) && !IsDayOne(now)
 }
 
-func getUserTime(usersession string) time.Time {
+func getUserTime(intent *DialogflowRequest) time.Time {
 
 	// for debug
 	// format := TIME_MACHINE_TIME_FORMAT

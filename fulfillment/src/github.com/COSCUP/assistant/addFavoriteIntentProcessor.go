@@ -1,6 +1,7 @@
 package assistant
 
 import (
+	"fmt"
 	"github.com/COSCUP/assistant/program-fetcher"
 	log "github.com/Sirupsen/logrus"
 )
@@ -52,14 +53,15 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 	prog, _ := fetcher.GetPrograms()
 	sessionInfo := prog.GetSessionByID(selectedID)
 	title := sessionInfo.Zh.Title
-
 	userStorage.addFavorite(selectedID)
+	favList := userStorage.getFavoriteList()
+	log.Println("favlist length:", len(favList))
 
-	return map[string]interface{}{
+	ret := map[string]interface{}{
 		"expectUserResponse": true,
 		"userStorage":        userStorage.EncodeToString(),
 
-		"systemIntent": p.getListSystemIntentPayload(),
+		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
 				getSimpleResponsePayload(p.speechMessage(title), p.displayMessage(title)),
@@ -81,8 +83,80 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 				// ),
 			},
 			"suggestions": p.getSuggsetion(),
-
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},
+		"outputContexts": map[string]interface{}{
+			"pervious_session_list": map[string]interface{}{
+				"list": favList,
+			},
+		},
 	}
+
+	if len(favList) >= 2 {
+		ll := []ListItem{}
+
+		for i, id := range favList {
+
+			prog, _ := fetcher.GetPrograms()
+			sessionInfo := prog.GetSessionByID(id.(string))
+			title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
+			desc := sessionInfo.Zh.Description
+			dt := "D1"
+			if IsDayTwo(sessionInfo.Start) {
+				dt = "D2"
+			}
+			timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+			subTitle := sessionInfo.Room + " " + timeLine
+			sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
+			item := getListItemPayload(title, id.(string), subTitle+"\n"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
+			ll = append(ll, item)
+
+		}
+
+		ret["systemIntent"] = getListSystemIntentPayload("興趣列表", ll)
+
+	} else if len(favList) == 1 {
+		// card
+		return p.PayloadWithOneFavorite(input, favList, userStorage)
+	}
+	return ret
+}
+
+func (p AddFavoriteIntentProcessor) PayloadWithOneFavorite(input *DialogflowRequest, favList []interface{}, userStorage *UserStorage) map[string]interface{} {
+	sessId := favList[0].(string)
+	prog, _ := fetcher.GetPrograms()
+	sessionInfo := prog.GetSessionByID(sessId)
+	title := sessionInfo.Zh.Title
+	desc := sessionInfo.Zh.Description
+	timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+	subTitle := sessionInfo.Room + " " + timeLine
+	sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+
+	ret := map[string]interface{}{
+		"expectUserResponse": true,
+		"userStorage":        userStorage.EncodeToString(),
+
+		// "systemIntent": getListSystemIntentPayload(),
+		"richResponse": map[string]interface{}{
+			"items": []map[string]interface{}{
+				getSimpleResponsePayload(p.displayMessage(title), p.displayMessage(title)),
+
+				getBasicCardResponsePayload(
+					title,
+					subTitle,
+					desc,
+					sessionPhotoUrl, "講者照片",
+					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
+			},
+			"suggestions": p.getSuggsetion(),
+		},
+
+		"outputContexts": map[string]interface{}{
+			"selected_session": map[string]interface{}{
+				"id": sessId,
+			},
+		},
+	}
+	return ret
 }

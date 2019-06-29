@@ -14,18 +14,17 @@ func (HelpIntentProcessor) Name() string {
 	return "Intent Help"
 }
 
-func (p HelpIntentProcessor) displayMessage() string {
-	if IsInActivity(getUserTime("")) {
-
+func (p HelpIntentProcessor) displayMessage(input *DialogflowRequest) string {
+	if IsInActivity(getUserTime(input)) {
 		return "現在是 Day 1 我可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
 	} else {
-		return "活動前我可以告訴您註冊資訊，活動中可以告訴 您下個議程什麼時候開始，或者是 Telegram 連 結。"
+		return "活動前我可以告訴您註冊資訊，活動中可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
 	}
 
 }
 
-func (p HelpIntentProcessor) speechMessage() string {
-	if IsInActivity(getUserTime("")) {
+func (p HelpIntentProcessor) speechMessage(input *DialogflowRequest) string {
+	if IsInActivity(getUserTime(input)) {
 		return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
 
 	} else {
@@ -37,7 +36,7 @@ func (p HelpIntentProcessor) getSuggsetionItemFromRoomName(roomName string) map[
 	return getSuggestionPayload(roomName + "的議程什麼時候開始")
 }
 
-func (p HelpIntentProcessor) getSuggsetion() []map[string]interface{} {
+func (p HelpIntentProcessor) getSuggsetion(input *DialogflowRequest) []map[string]interface{} {
 
 	list, _ := fetcher.GetPrograms()
 	log.Println("kust", list.Rooms)
@@ -49,7 +48,7 @@ func (p HelpIntentProcessor) getSuggsetion() []map[string]interface{} {
 		// getSuggestionPayload("321"),
 	}
 
-	if !IsInActivity(getUserTime("")) {
+	if !IsInActivity(getUserTime(input)) {
 		ret = append(ret, getSuggestionPayload("註冊要錢嗎"))
 		ret = append(ret, getSuggestionPayload("註冊什麼時候開始"))
 	}
@@ -69,7 +68,7 @@ func (p HelpIntentProcessor) Payload(input *DialogflowRequest) map[string]interf
 		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
-				getSimpleResponsePayload(p.speechMessage(), p.displayMessage()),
+				getSimpleResponsePayload(p.speechMessage(input), p.displayMessage(input)),
 				// getBasicCardResponsePayload("title", "subtitle", "formattedText",
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
 
@@ -87,7 +86,7 @@ func (p HelpIntentProcessor) Payload(input *DialogflowRequest) map[string]interf
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED",
 				// ),
 			},
-			"suggestions": p.getSuggsetion(),
+			"suggestions": p.getSuggsetion(input),
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},
 	}

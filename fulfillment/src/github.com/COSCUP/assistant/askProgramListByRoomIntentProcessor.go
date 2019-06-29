@@ -1,6 +1,7 @@
 package assistant
 
 import (
+	"fmt"
 	"github.com/COSCUP/assistant/program-fetcher"
 	log "github.com/Sirupsen/logrus"
 	"sort"
@@ -16,7 +17,7 @@ func (AskProgramListByRoomIntentProcessor) Name() string {
 }
 
 func (p AskProgramListByRoomIntentProcessor) displayMessage(input *DialogflowRequest, session *fetcher.Session) string {
-	t := getUserTime(input.UserId())
+	t := getUserTime(input)
 	timeString := t.Format("現在是1月02日15點04分")
 	roomName := input.RoomName()
 	if session == nil {
@@ -29,7 +30,7 @@ func (p AskProgramListByRoomIntentProcessor) displayMessage(input *DialogflowReq
 }
 
 func (p AskProgramListByRoomIntentProcessor) speechMessage(input *DialogflowRequest, session *fetcher.Session) string {
-	t := getUserTime(input.UserId())
+	t := getUserTime(input)
 	timeString := t.Format("現在是1月02日15點04分")
 	roomName := input.RoomName()
 	if session == nil {
@@ -65,7 +66,7 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 	// userConversationToken := NewConversationTokenFromDialogflowRequest(input)
 	log.Println("user storage: ", userStorage)
 
-	t := getUserTime(input.UserId())
+	t := getUserTime(input)
 	roomName := input.RoomName()
 	log.Println("user time: ", t)
 	coscupPrograms, _ := fetcher.GetPrograms()
@@ -87,9 +88,9 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 
 	rs := []Row{}
 
-	for _, session := range filtered {
+	for i, session := range filtered {
 
-		title := session.Zh.Title
+		title := fmt.Sprintf("%d. %s", i+1, session.Zh.Title)
 		timeLine := session.Start.Format("15:04") + "~" + session.End.Format("15:04")
 
 		rs = append(rs,

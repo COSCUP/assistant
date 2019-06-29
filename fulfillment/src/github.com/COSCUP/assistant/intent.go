@@ -20,6 +20,7 @@ var intentProcessorList = []IntentProcessor{
 
 	AddFavoriteIntentProcessor{},
 	QueryFavoriteListIntentProcessor{},
+	RemoveFavoriteIntentProcessor{},
 
 	DefaultFallbackIntent{},
 }

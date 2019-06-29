@@ -67,6 +67,19 @@ func (s UserStorage) getFavoriteList() []interface{} {
 	return favList
 }
 
+func (s UserStorage) isSessionIdInFavorite(id string) bool {
+	favList, ok := s["favorite_list"].([]interface{})
+	if !ok {
+		return false
+	}
+	for _, v := range favList {
+		if v == id {
+			return true
+		}
+	}
+	return false
+}
+
 // func (s *UserStorage) AddPreviousRequestSessionList([]) {
 
 // }

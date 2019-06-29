@@ -1,6 +1,7 @@
 package assistant
 
 import (
+	"fmt"
 	"github.com/COSCUP/assistant/program-fetcher"
 	log "github.com/Sirupsen/logrus"
 )
@@ -14,7 +15,7 @@ func (QueryFavoriteListIntentProcessor) Name() string {
 }
 
 func (p QueryFavoriteListIntentProcessor) displayMessage(l int) string {
-	return "您目前的訂閱列表如下，一共有 " + string(l) + "項："
+	return "您目前的訂閱列表如下，一共有" + fmt.Sprintf("%d", l) + "項："
 }
 
 func (p QueryFavoriteListIntentProcessor) speechMessage() string {
@@ -63,6 +64,11 @@ func (p QueryFavoriteListIntentProcessor) Payload(input *DialogflowRequest) map[
 			"suggestions": p.getSuggsetion(),
 			// "linkOutSuggestion": getLinkOutSuggestionPayload("tih", "https://www.tih.tw"),
 		},
+		"outputContexts": map[string]interface{}{
+			"pervious_session_list": map[string]interface{}{
+				"list": favList,
+			},
+		},
 	}
 
 	log.Println("favlist length:", len(favList))
@@ -70,11 +76,11 @@ func (p QueryFavoriteListIntentProcessor) Payload(input *DialogflowRequest) map[
 	if len(favList) >= 2 {
 		ll := []ListItem{}
 
-		for _, id := range favList {
+		for i, id := range favList {
 
 			prog, _ := fetcher.GetPrograms()
 			sessionInfo := prog.GetSessionByID(id.(string))
-			title := sessionInfo.Zh.Title
+			title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
 			desc := sessionInfo.Zh.Description
 			dt := "D1"
 			if IsDayTwo(sessionInfo.Start) {
@@ -137,16 +143,21 @@ func (p QueryFavoriteListIntentProcessor) PayloadWithOneFavorite(input *Dialogfl
 			},
 			"suggestions": p.getSuggsetion(),
 		},
+		"outputContexts": map[string]interface{}{
+			"selected_session": map[string]interface{}{
+				"id": sessId,
+			},
+		},
 	}
 	return ret
 }
 
 func (p QueryFavoriteListIntentProcessor) displayMessageWithNoFavoriteList() string {
-	return "您目前沒有訂閱列表，可以透過查詢某個時段的議程進行加入，您可以問我「IB101接下來有哪些議程」。"
+	return "您目前沒有訂閱任何議程，可以透過查詢某個時段的議程進行加入，您可以問我「IB101接下來有哪些議程」。"
 }
 
 func (p QueryFavoriteListIntentProcessor) speechMessageWithNoFavoriteList() string {
-	return "您目前沒有訂閱列表，可以透過查詢某個時段的議程進行加入，您可以問我「IB101接下來有哪些議程」。"
+	return "您目前沒有訂閱任何議程，可以透過查詢某個時段的議程進行加入，您可以問我「IB101接下來有哪些議程」。"
 }
 
 func (p QueryFavoriteListIntentProcessor) getSuggsetionWithNoFavoriteList() []map[string]interface{} {
