@@ -40,11 +40,7 @@ func (p AskProgramListByTimeIntentProcessor) getListSystemIntentPayload(listTitl
 	for _, sessionInfo := range sessions {
 		title := sessionInfo.Zh.Title
 		desc := sessionInfo.Zh.Description
-		dt := "D1"
-		if IsDayTwo(sessionInfo.Start) {
-			dt = "D2"
-		}
-		timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+		timeLine := getSessionTimeLineWithDay(&sessionInfo)
 		subTitle := sessionInfo.Room + " " + timeLine
 		sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
 

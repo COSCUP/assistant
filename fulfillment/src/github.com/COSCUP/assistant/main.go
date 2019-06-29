@@ -3,6 +3,7 @@ package assistant
 // import "cloud.google.com/go/dialogflow/apiv2"
 import (
 	"encoding/json"
+	"github.com/COSCUP/assistant/program-fetcher"
 	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -251,6 +252,16 @@ func (r DialogflowRequest) SelectedNumber() int {
 
 }
 
+func (r DialogflowRequest) GetSessionIdFromOptionResult() string {
+	optionContext := r.Context("actions_intent_option")
+	if optionContext == nil {
+		return ""
+	}
+
+	return optionContext["OPTION"].(string)
+
+}
+
 // func (r DialogflowRequest) AddContext(key string, lifespanCount int) {
 // 	r.QueryResult.OutputContexts = append(r.QueryResult.OutputContexts,
 // 		DialogflowContext{
@@ -266,4 +277,13 @@ func (r DialogflowRequest) SelectedNumber() int {
 func writeDialogflowResponse(w http.ResponseWriter, dr *DialogflowResponse) {
 	data, _ := json.Marshal(dr)
 	w.Write(data)
+}
+
+func getSessionTimeLineWithDay(session *fetcher.Session) string {
+	dt := "D1"
+	if IsDayTwo(session.Start) {
+		dt = "D2"
+	}
+	timeLine := dt + " " + session.Start.Format("15:04") + "~" + session.End.Format("15:04")
+	return timeLine
 }
