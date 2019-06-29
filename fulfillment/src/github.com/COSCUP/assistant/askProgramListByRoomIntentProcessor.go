@@ -1,7 +1,9 @@
 package assistant
 
 import (
-// log "github.com/Sirupsen/logrus"
+	"github.com/COSCUP/assistant/program-fetcher"
+	log "github.com/Sirupsen/logrus"
+	"sort"
 )
 
 type AskProgramListByRoomIntentProcessor struct {
@@ -13,12 +15,20 @@ func (AskProgramListByRoomIntentProcessor) Name() string {
 	return "Intent Ask Program List by Room"
 }
 
-func (p AskProgramListByRoomIntentProcessor) displayMessage() string {
-	return "現在是上午11點，IB101的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
+func (p AskProgramListByRoomIntentProcessor) displayMessage(input *DialogflowRequest) string {
+	t := getUserTime(input.UserId())
+	timeString := t.Format("現在是1月02日15點04分")
+	roomName := input.RoomName()
+
+	return timeString + "，" + roomName.String() + "的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
 }
 
-func (p AskProgramListByRoomIntentProcessor) speechMessage() string {
-	return "現在是上午11點，IB101的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
+func (p AskProgramListByRoomIntentProcessor) speechMessage(input *DialogflowRequest) string {
+	t := getUserTime(input.UserId())
+	timeString := t.Format("現在是1月02日15點04分")
+	roomName := input.RoomName()
+
+	return timeString + "，" + roomName.String() + "的下個議程「加密/解密 雜湊看 PHP 版本的演進」在13:00開始。"
 }
 
 func (p AskProgramListByRoomIntentProcessor) getSuggsetion() []map[string]interface{} {
@@ -29,18 +39,41 @@ func (p AskProgramListByRoomIntentProcessor) getSuggsetion() []map[string]interf
 }
 
 func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) map[string]interface{} {
-	rs := []Row{
-		getRowPayload([]Cell{
-			getCellPayload("加密/解密 雜湊看 PHP 版本的演進"),
-			getCellPayload("13:00 ~ 13:50"),
-		}, true),
-		getRowPayload([]Cell{
-			getCellPayload("从 GRANK 到 GITRANK ， ..."),
-			getCellPayload("15:00 ~ 15:50"),
-		}, true),
+	t := getUserTime(input.UserId())
+	roomName := input.RoomName()
+	log.Println("user time: ", t)
+	coscupPrograms, _ := fetcher.GetPrograms()
+
+	log.Println("sessions length: ", len(coscupPrograms.Sessions))
+
+	filited := []fetcher.Session{}
+	for _, session := range coscupPrograms.Sessions {
+		log.Println("comparing:", session.Room, roomName)
+		if session.Room != roomName.String() {
+			continue
+		}
+
+		filited = append(filited, session)
 	}
 
-	roomName := input.RoomName()
+	log.Println("filited sessions length: ", len(filited))
+	sort.Sort(fetcher.ByStartTime(filited))
+
+	rs := []Row{}
+
+	for _, session := range filited {
+
+		title := session.Zh.Title
+		timeLine := session.Start.Format("15:04") + "~" + session.End.Format("15:04")
+
+		rs = append(rs,
+			getRowPayload([]Cell{
+				getCellPayload(title),
+				getCellPayload(timeLine),
+			}, true),
+		)
+	}
+
 	title := "Room " + roomName
 
 	return map[string]interface{}{
@@ -49,7 +82,7 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 		// "systemIntent": getListSystemIntentPayload(),
 		"richResponse": map[string]interface{}{
 			"items": []map[string]interface{}{
-				getSimpleResponsePayload(p.speechMessage(), p.displayMessage()),
+				getSimpleResponsePayload(p.speechMessage(input), p.displayMessage(input)),
 				// getBasicCardResponsePayload("title", "subtitle", "formattedText",
 				// 	"https://coscup.org/2019/_nuxt/img/c2f9236.png", "image", "按鈕", "https://www.tih.tw", "CROPPED"),
 

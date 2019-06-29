@@ -17,4 +17,7 @@ var intentProcessorList = []IntentProcessor{
 	AskProgramListByRoomIntentProcessor{},
 	AskProgramListByTimeIntentProcessor{},
 	AskProgramByProgramIntentProcessor{},
+
+	AddFavoriteIntentProcessor{},
+	QueryFavoriteListIntentProcessor{},
 }

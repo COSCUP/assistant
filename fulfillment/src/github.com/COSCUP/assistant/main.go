@@ -10,6 +10,10 @@ import (
 
 type RoomNameType string
 
+func (t RoomNameType) String() string {
+	return string(t)
+}
+
 const (
 	RoomNameTypeIB101  RoomNameType = "IB101"
 	RoomNameTypeIB201  RoomNameType = "IB201"
@@ -186,6 +190,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request, data []byte) {
 
 func (r DialogflowRequest) RoomName() RoomNameType {
 	return RoomNameType(r.QueryResult.Parameters["RoomName"])
+}
+
+func (r DialogflowRequest) UserId() string {
+	return r.OriginalDetectIntentRequest.Payload.Conversation.ConversationID
 }
 
 func writeDialogflowResponse(w http.ResponseWriter, dr *DialogflowResponse) {

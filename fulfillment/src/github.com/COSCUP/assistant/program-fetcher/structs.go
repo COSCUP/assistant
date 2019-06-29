@@ -1,5 +1,9 @@
 package fetcher
 
+import (
+	"time"
+)
+
 type SessionLocalization struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -10,8 +14,8 @@ type Session struct {
 	Type      string              `json:"type"`
 	Room      string              `json:"room"`
 	Broadcast string              `json:"broadcast"`
-	Start     string              `json:"start"`
-	End       string              `json:"end"`
+	Start     time.Time           `json:"start"`
+	End       time.Time           `json:"end"`
 	Qa        string              `json:"qa"`
 	Slide     string              `json:"slide"`
 	Live      string              `json:"live"`

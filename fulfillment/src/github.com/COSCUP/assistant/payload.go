@@ -24,6 +24,8 @@ type ListItem map[string]interface{}
 
 type Image map[string]interface{}
 
+type CarouselBrowseItem map[string]interface{}
+
 func getImagePayload(url, text string) Image {
 	return map[string]interface{}{
 		"url":               url,
@@ -55,6 +57,31 @@ func getListSystemIntentPayload(title string, items []ListItem) map[string]inter
 			},
 		},
 	}
+}
+
+func getCarouselBrowseItemPayload(title, description, footer, openUrlActionUrl string, image Image) CarouselBrowseItem {
+	ret := map[string]interface{}{
+		"title":       title,
+		"description": description,
+		"footer":      footer,
+		"image":       image,
+	}
+	if openUrlActionUrl != "" {
+		ret["openUrlAction"] = map[string]interface{}{
+			"url": openUrlActionUrl,
+		}
+	}
+
+	return ret
+}
+
+func getCarouselBrowsePayload(items []CarouselBrowseItem) map[string]interface{} {
+	return map[string]interface{}{
+		"carouselBrowse": map[string]interface{}{
+			"items": items,
+		},
+	}
+
 }
 
 func getLinkOutSuggestionPayload(name, url string) map[string]interface{} {
