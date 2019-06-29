@@ -76,11 +76,15 @@ func (p QueryFavoriteListIntentProcessor) Payload(input *DialogflowRequest) map[
 			sessionInfo := prog.GetSessionByID(id.(string))
 			title := sessionInfo.Zh.Title
 			desc := sessionInfo.Zh.Description
-			timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+			dt := "D1"
+			if IsDayTwo(sessionInfo.Start) {
+				dt = "D2"
+			}
+			timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
 			subTitle := sessionInfo.Room + " " + timeLine
 			sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
 
-			item := getListItemPayload(title, id.(string), subTitle+"|"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
+			item := getListItemPayload(title, id.(string), subTitle+"\n"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
 			ll = append(ll, item)
 
 		}

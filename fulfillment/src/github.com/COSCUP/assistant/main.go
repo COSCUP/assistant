@@ -3,10 +3,10 @@ package assistant
 // import "cloud.google.com/go/dialogflow/apiv2"
 import (
 	"encoding/json"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"strings"
-
-	log "github.com/Sirupsen/logrus"
+	"time"
 )
 
 type RoomNameType string
@@ -218,6 +218,20 @@ func (r DialogflowRequest) Context(key string) map[string]interface{} {
 	}
 	return nil
 
+}
+
+func (r DialogflowRequest) Time() *time.Time {
+	timeStr := r.QueryResult.Parameters["time"].(string)
+	if timeStr == "" {
+		return nil
+	}
+	t, _ := time.Parse(time.RFC3339, timeStr)
+	return &t
+}
+
+func (r DialogflowRequest) DayType() string {
+	str, _ := r.QueryResult.Parameters["DayType"].(string)
+	return str
 }
 
 func (r DialogflowRequest) SelectedNumber() int {
