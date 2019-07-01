@@ -16,19 +16,19 @@ func (HelpIntentProcessor) Name() string {
 
 func (p HelpIntentProcessor) displayMessage(input *DialogflowRequest) string {
 	if IsInActivity(getUserTime(input)) {
-		return "現在是 Day 1 我可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
+		return "現在是 Day 1 我可以告訴您下個議程什麼時候開始。"
 	} else {
-		return "活動前我可以告訴您註冊資訊，活動中可以告訴您下個議程什麼時候開始，或者是 Telegram 連結。"
+		return "活動前我可以告訴您第一天有哪些議程，活動中可以告訴您下個議程什麼時候開始。"
 	}
 
 }
 
 func (p HelpIntentProcessor) speechMessage(input *DialogflowRequest) string {
 	if IsInActivity(getUserTime(input)) {
-		return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始，或者是 貼了古拉姆 連結。 </speak>`
+		return `<speak>現在是 <sub alias="嗲萬">Day 1</sub> <break time="200ms"/>我可以告訴您下個議程什麼時候開始 </speak>`
 
 	} else {
-		return "活動前我可以告訴您註冊資訊，活動中可以告訴 您下個議程什麼時候開始，或者是 Telegram 連結。"
+		return "活動前我可以告訴您第一天有哪些議程，活動中可以告訴 您下個議程什麼時候開始"
 	}
 }
 
