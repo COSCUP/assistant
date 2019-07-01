@@ -48,10 +48,10 @@ func (p HelpIntentProcessor) getSuggsetion(input *DialogflowRequest) []map[strin
 		// getSuggestionPayload("321"),
 	}
 
-	if !IsInActivity(getUserTime(input)) {
-		ret = append(ret, getSuggestionPayload("註冊要錢嗎"))
-		ret = append(ret, getSuggestionPayload("註冊什麼時候開始"))
-	}
+	// if !IsInActivity(getUserTime(input)) {
+	// 	ret = append(ret, getSuggestionPayload("註冊要錢嗎"))
+	// 	ret = append(ret, getSuggestionPayload("註冊什麼時候開始"))
+	// }
 
 	var selectNumber = 5
 	for _, selectedIndex := range perm[:selectNumber] {

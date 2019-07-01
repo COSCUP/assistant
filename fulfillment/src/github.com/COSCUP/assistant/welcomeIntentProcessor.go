@@ -19,6 +19,10 @@ func (p WelcomeIntentProcessor) speechMessage() string {
 func (p WelcomeIntentProcessor) getSuggsetion() []map[string]interface{} {
 	return []map[string]interface{}{
 		getSuggestionPayload("你會做什麼"),
+		getSuggestionPayload("第一天有哪些議程"),
+		getSuggestionPayload("第二天有哪些議程"),
+		getSuggestionPayload("我的議程列表"),
+
 		// getSuggestionPayload("321"),
 	}
 }

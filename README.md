@@ -14,7 +14,7 @@ Backend (fulfillment) is in /fulfillment folder, wrote on Golang.
 cd fulfillment
 export GOPATH=`pwd`
 
-cd fulfillment/src/github.com/COSCUP/assistant
+cd src/github.com/COSCUP/assistant
 dep ensure
 ```
 
