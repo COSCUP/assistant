@@ -9,11 +9,11 @@ func (WelcomeIntentProcessor) Name() string {
 }
 
 func (p WelcomeIntentProcessor) displayMessage() string {
-	return "您好，我是開源人年會小幫手，我可以告訴您關於開源人年會 COSCUP 的資訊，您可以從「你會做什麼」開始："
+	return "您好，我是開源人年會，我可以告訴您關於開源人年會 COSCUP 的資訊，您可以從「你會做什麼」開始："
 }
 
 func (p WelcomeIntentProcessor) speechMessage() string {
-	return "您好，我是開源人年會小幫手，我可以告訴您關於開源人年會 摳史髂頗 的資訊，您可以從「你會做什麼」開始："
+	return "您好，我是開源人年會，我可以告訴您關於開源人年會 摳史髂頗 的資訊，您可以從「你會做什麼」開始："
 }
 
 func (p WelcomeIntentProcessor) getSuggsetion() []map[string]interface{} {

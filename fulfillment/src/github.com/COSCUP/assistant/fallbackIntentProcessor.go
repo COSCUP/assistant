@@ -53,18 +53,18 @@ func (p DefaultFallbackIntent) Payload(input *DialogflowRequest) map[string]inte
 	responseList := []response{
 		response{
 			suggestion: p.getSuggsetion(),
-			text:       "這邊是開源人年會小幫手，您可以換種方式說說看嗎？或者是幫忙在 GitHub 上開個 ISSUE 如何？",
-			ssml:       `<speak>這邊是開源人年會小幫手，<break/>您可以換種方式說說看嗎？或者是幫忙在 基ハ 上開個 伊シュー 如 何？</speak>`,
+			text:       "這邊是開源人年會，您可以換種方式說說看嗎？或者是幫忙在 GitHub 上開個 ISSUE 如何？",
+			ssml:       `<speak>這邊是開源人年會，<break/>您可以換種方式說說看嗎？或者是幫忙在 基ハ 上開個 伊シュー 如 何？</speak>`,
 		},
 		response{
 			suggestion: p.getSuggsetion(),
-			text:       "這邊是開源人年會小幫手，我不是很確定您想要我做什麼，或者是您可以問我「你會做什麼」",
-			ssml:       `<speak>這邊是開源人年會小幫手，<break/>我不是很確定您想要我做什麼，或者是您可以問我「你會做什麼」</speak>`,
+			text:       "這邊是開源人年會，我不是很確定您想要我做什麼，或者是您可以問我「你會做什麼」",
+			ssml:       `<speak>這邊是開源人年會，<break/>我不是很確定您想要我做什麼，或者是您可以問我「你會做什麼」</speak>`,
 		},
 		response{
 			suggestion: p.getSuggsetion(),
-			text:       "我是會幫忙管理議程資訊的開源人年會小幫手，您可以說「離開」來離開對話。",
-			ssml:       `<speak>我是會幫忙管理議程資訊的開源人年會小幫手，<break/>您可以說「離開」來離開對話。</speak>`,
+			text:       "我是會幫忙管理議程資訊的開源人年會，您可以說「離開」來離開對話。",
+			ssml:       `<speak>我是會幫忙管理議程資訊的開源人年會，<break/>您可以說「離開」來離開對話。</speak>`,
 		},
 	}
 
