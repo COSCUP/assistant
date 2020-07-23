@@ -28,6 +28,10 @@ func (p AddFavoriteIntentProcessor) getSuggsetion(favList []interface{}) []map[s
 	prog, _ := fetcher.GetPrograms()
 	for _, it := range favList {
 		sessionInfo := prog.GetSessionByID(it.(string))
+		log.Println("favList:", it, sessionInfo)
+		if(sessionInfo == nil){
+			continue
+		}
 		dt := "第一天"
 		if IsDayTwo(sessionInfo.Start) {
 			dt = "第二天"
@@ -64,6 +68,7 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 	selectedID := contextSelectedSession["id"].(string)
 
 	prog, _ := fetcher.GetPrograms()
+	// userStorage.removeInvalidFavorite(prog)
 	sessionInfo := prog.GetSessionByID(selectedID)
 	title := sessionInfo.Zh.Title
 	userStorage.addFavorite(selectedID)
@@ -105,34 +110,38 @@ func (p AddFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[string
 		},
 	}
 
-	if len(favList) >= 2 {
-		ll := []ListItem{}
+	ll := []ListItem{}
 
-		prog, _ := fetcher.GetPrograms()
-		for i, id := range favList {
+	for i, id := range favList {
 
-			sessionInfo := prog.GetSessionByID(id.(string))
-			title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
-			desc := sessionInfo.Zh.Description
-			dt := "D1"
-			if IsDayTwo(sessionInfo.Start) {
-				dt = "D2"
-			}
-			timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
-			subTitle := sessionInfo.Room + " " + timeLine
-			sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
-
-			item := getListItemPayload(title, id.(string),
-				subTitle+"\n"+desc, []string{title},
-				getImagePayload(sessionPhotoUrl, "講者照片"))
-			ll = append(ll, item)
-
+		sessionInfo := prog.GetSessionByID(id.(string))
+		log.Println("favList:", id, sessionInfo)
+		if(sessionInfo == nil){
+			continue
 		}
+		title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
+		desc := sessionInfo.Zh.Description
+		dt := "D1"
+		if IsDayTwo(sessionInfo.Start) {
+			dt = "D2"
+		}
+		timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+		subTitle := sessionInfo.Room + " " + timeLine
+		sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
 
+		item := getListItemPayload(title, id.(string),
+			subTitle+"\n"+desc, []string{title},
+			getImagePayload(sessionPhotoUrl, "講者照片"))
+		ll = append(ll, item)
+
+	}
+
+
+	if len(ll) >= 2 {
 		ret["systemIntent"] = getListSystemIntentPayload("興趣列表", ll)
-
-	} else if len(favList) == 1 {
+	} else if len(ll) == 1 {
 		// card
+		fmt.Println("fav list:", ll)
 		return p.PayloadWithOneFavorite(input, favList, userStorage)
 	}
 	return ret
@@ -142,6 +151,7 @@ func (p AddFavoriteIntentProcessor) PayloadWithOneFavorite(input *DialogflowRequ
 	sessId := favList[0].(string)
 	prog, _ := fetcher.GetPrograms()
 	sessionInfo := prog.GetSessionByID(sessId)
+	
 	title := sessionInfo.Zh.Title
 	desc := sessionInfo.Zh.Description
 	timeLine := sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")

@@ -54,6 +54,7 @@ func (p RemoveFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[str
 	}
 
 	prog, _ := fetcher.GetPrograms()
+	// userStorage.removeInvalidFavorite(prog)
 	sessionInfo := prog.GetSessionByID(selectedID)
 	title := sessionInfo.Zh.Title
 	userStorage.removeFavorite(selectedID)
@@ -95,31 +96,35 @@ func (p RemoveFavoriteIntentProcessor) Payload(input *DialogflowRequest) map[str
 		},
 	}
 
-	if len(favList) >= 2 {
-		ll := []ListItem{}
 
-		for i, id := range favList {
+	ll := []ListItem{}
 
-			prog, _ := fetcher.GetPrograms()
-			sessionInfo := prog.GetSessionByID(id.(string))
-			title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
-			desc := sessionInfo.Zh.Description
-			dt := "D1"
-			if IsDayTwo(sessionInfo.Start) {
-				dt = "D2"
-			}
-			timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
-			subTitle := sessionInfo.Room + " " + timeLine
-			sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
+	for i, id := range favList {
 
-			item := getListItemPayload(title, id.(string), subTitle+"\n"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
-			ll = append(ll, item)
-
+		prog, _ := fetcher.GetPrograms()
+		sessionInfo := prog.GetSessionByID(id.(string))
+		log.Println("favList:", id, sessionInfo)
+		if(sessionInfo == nil){
+			continue
 		}
+		title := fmt.Sprintf("%d. ", i+1) + sessionInfo.Zh.Title
+		desc := sessionInfo.Zh.Description
+		dt := "D1"
+		if IsDayTwo(sessionInfo.Start) {
+			dt = "D2"
+		}
+		timeLine := dt + " " + sessionInfo.Start.Format("15:04") + "~" + sessionInfo.End.Format("15:04")
+		subTitle := sessionInfo.Room + " " + timeLine
+		sessionPhotoUrl := sessionInfo.SpeakerPhotoUrl()
 
+		item := getListItemPayload(title, id.(string), subTitle+"\n"+desc, []string{title}, getImagePayload(sessionPhotoUrl, "講者照片"))
+		ll = append(ll, item)
+
+	}
+
+	if len(ll) >= 2 {
 		ret["systemIntent"] = getListSystemIntentPayload("興趣列表", ll)
-
-	} else if len(favList) == 1 {
+	} else if len(ll) == 1 {
 		// card
 		return p.PayloadWithOneFavorite(input, favList, userStorage, title)
 	} else {

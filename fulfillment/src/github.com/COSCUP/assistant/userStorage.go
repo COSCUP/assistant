@@ -3,6 +3,7 @@ package assistant
 import (
 	"encoding/json"
 	"github.com/COSCUP/assistant/program-fetcher"
+	"log"
 	"strings"
 )
 
@@ -41,6 +42,33 @@ func (s UserStorage) addFavorite(id string) {
 		}
 	}
 	s["favorite_list"] = append(favList, id)
+
+}
+
+func (s UserStorage) removeInvalidFavorite(progs *fetcher.ProgramsResponedPayload) {
+	log.Println("now favorite id:", s)
+
+
+	favList, ok := s["favorite_list"].([]interface{})
+	if !ok {
+		return
+	}
+	newList := []string{}
+	for _, v := range favList {
+		log.Println("test ", v)
+		p := progs.GetSessionByID(v.(string))
+		log.Println("test ", v , p)
+		if p != nil {
+			d := v.(string)
+			newList = append(newList, d)
+		}
+
+	}
+
+	s["favorite_list"] = newList
+
+	log.Println("remain ", s.getFavoriteList())
+	log.Println("length ", len(s.getFavoriteList()))
 
 }
 
