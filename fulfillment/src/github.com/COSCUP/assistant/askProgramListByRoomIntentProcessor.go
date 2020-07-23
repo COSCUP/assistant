@@ -131,7 +131,7 @@ func (p AskProgramListByRoomIntentProcessor) Payload(input *DialogflowRequest) m
 						getColumnPropertyPayload("名稱", HorizontalAlignmentLeading),
 						getColumnPropertyPayload("開始時間", HorizontalAlignmentTrailing),
 					},
-					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "COSCUP LOGO", "議程網頁", "https://coscup.org/2019/programs/", "CROPPED",
+					"https://coscup.org/2019/_nuxt/img/c2f9236.png", "COSCUP LOGO", "議程網頁", "https://coscup.org/2020/zh-TW/agenda", "CROPPED",
 				),
 			},
 			"suggestions": p.getSuggsetion(input, len(filtered)),

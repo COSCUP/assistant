@@ -247,7 +247,7 @@ func (p AskProgramListByTimeIntentProcessor) PayloadWithOneSession(input *Dialog
 					subTitle,
 					desc,
 					sessionPhotoUrl, "講者照片",
-					"議程網頁", "https://coscup.org/2019/programs/"+sessionInfo.ID, "CROPPED"),
+					"議程網頁", "https://coscup.org/2020/zh-TW/agenda/"+sessionInfo.ID, "CROPPED"),
 			},
 			"suggestions": p.getSuggsetion(),
 		},
