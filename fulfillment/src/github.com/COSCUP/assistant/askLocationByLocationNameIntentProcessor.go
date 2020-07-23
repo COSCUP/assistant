@@ -30,19 +30,19 @@ func (p LocationByLocationNameIntentProcessor) getSuggsetion(input *DialogflowRe
 	}
 
 	if string(input.RoomName()) == "" {
-		ret = append(ret, getSuggestionPayload("IB101在哪"))
-		ret = append(ret, getSuggestionPayload("IB201在哪"))
-		ret = append(ret, getSuggestionPayload("IB301在哪"))
-		ret = append(ret, getSuggestionPayload("IB302在哪"))
-		ret = append(ret, getSuggestionPayload("IB304在哪"))
-		ret = append(ret, getSuggestionPayload("IB305在哪"))
-		ret = append(ret, getSuggestionPayload("IB306在哪"))
-		ret = append(ret, getSuggestionPayload("IB401在哪"))
-		ret = append(ret, getSuggestionPayload("IB408在哪"))
-		ret = append(ret, getSuggestionPayload("IB501在哪"))
-		ret = append(ret, getSuggestionPayload("IB502在哪"))
-		ret = append(ret, getSuggestionPayload("IB503在哪"))
-		ret = append(ret, getSuggestionPayload("E2102在哪"))
+		// ret = append(ret, getSuggestionPayload("IB101在哪"))
+		// ret = append(ret, getSuggestionPayload("IB201在哪"))
+		// ret = append(ret, getSuggestionPayload("IB301在哪"))
+		// ret = append(ret, getSuggestionPayload("IB302在哪"))
+		// ret = append(ret, getSuggestionPayload("IB304在哪"))
+		// ret = append(ret, getSuggestionPayload("IB305在哪"))
+		// ret = append(ret, getSuggestionPayload("IB306在哪"))
+		// ret = append(ret, getSuggestionPayload("IB401在哪"))
+		// ret = append(ret, getSuggestionPayload("IB408在哪"))
+		// ret = append(ret, getSuggestionPayload("IB501在哪"))
+		// ret = append(ret, getSuggestionPayload("IB502在哪"))
+		// ret = append(ret, getSuggestionPayload("IB503在哪"))
+		// ret = append(ret, getSuggestionPayload("E2102在哪"))
 	} else {
 
 		ret = append(ret, getSuggestionPayload(string(input.RoomName())+"的下個議程什麼時候開始"))
