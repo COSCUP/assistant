@@ -6,7 +6,8 @@ import (
 	"net/http"
 )
 
-var PROGRAM_URL = "https://api2019.coscup.org/programs.json"
+// var PROGRAM_URL = "https://api2019.coscup.org/programs.json" // 2019
+var PROGRAM_URL = "https://coscup.org/2020/json/session.json"
 
 var cache *ProgramsResponedPayload
 
