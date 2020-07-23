@@ -28,3 +28,9 @@ go build
 
 
 ```
+
+## Problem
+
+dep: command not found
+
+see https://github.com/golang/dep
