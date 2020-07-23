@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-const startDate = "2019-08-17 00:00:00+0800"
+const startDate = "2020-08-01 00:00:00+0800"
 const TIME_MACHINE_TIME_FORMAT = "2006-01-02 15:04:05Z0700"
 
 func IsInActivity(now time.Time) bool {
